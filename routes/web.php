@@ -39,11 +39,21 @@
 //   ]);
 //});
 
-Route::get('/',function(){
-   return view('welcome',[          // view() 함수 두번째 인자로 값을 넘긴다. (실전에서 많이 쓰는 방법)
-       'name' => 'Foo',
-       'greeting' => '안녕갑세요?',
-   ]);
+//Route::get('/',function(){
+//   return view('welcome',[          // view() 함수 두번째 인자로 값을 넘긴다. (실전에서 많이 쓰는 방법)
+//       'name' => 'Foo',
+//       'greeting' => '안녕갑세요????',
+//   ]);
+//});
+
+//Route::get('/',function(){
+//   $items = ['apple', 'banana', 'tomato']; // 실헙을 위한 데이터 하드코딩, #뷰 코드에서도 php 코드 사용 가능!!#
+//
+//   return view('welcome', ['items'=>$items]);
+//});
+
+Route::get('/', function () {
+    return view('welcome');
 });
 
 

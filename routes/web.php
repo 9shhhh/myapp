@@ -23,10 +23,14 @@ Route::get('/', [
         return '제 이름은 성환 입니다.';
    }
 ]);
+// 루트로 실행 하면 클로저 함수 실행됨. ->  return '제 이름은 성환 입니다.'
+
 
 Route::get('/home',function(){
    return redirect(route('home'));
 });
+// /home로 실행 하면 'home' 이라는 이름을 가진 route를 찾아서 실행
+// route() : http://localhost:8000 또는 http://호스트:포트 문자열을 반환 한다.
 
 
 

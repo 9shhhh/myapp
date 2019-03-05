@@ -1,1 +1,1 @@
-<h1>Hello world</h1>
+<h1><?= isset($greeting) ? "{$greeting}" : 'Hello ';?><?=$name;?></h1>

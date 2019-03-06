@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\ArticlesRequest;
 
 class ArticlesController extends Controller
 {
@@ -39,7 +40,7 @@ class ArticlesController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(\App\Http\Requests\ArticlesRequest $request)
+    public function store(ArticlesRequest $request)
     {
  
 //        return __METHOD__.'은(는) 사용자의 입력한 폼 데이터로 새로운 Article 컬렉션을 만듭니다.';

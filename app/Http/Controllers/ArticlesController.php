@@ -87,8 +87,12 @@ class ArticlesController extends Controller
 //       echo $foo;
 //       return __METHOD__ . '은(는)다음 기본 키를 가진 Article 모델을 조회 합니다.:'.$id;
         $article = \App\Article::findOrFail($id);
-        dd($article);
-        return $article->toArray();
+//        dd($article);
+//        return $article->toArray();
+
+        debug($article->toArray());
+        return view('article.show',compact('article'));
+
     }
 
     /**

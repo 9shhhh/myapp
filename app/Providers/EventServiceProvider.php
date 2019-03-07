@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Events\ArticleCreated;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -15,9 +16,18 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
+//        Registered::class => [ 메일 보내기 예제임..... 걍 주석
+//            SendEmailVerificationNotification::class,
+//        ],
+
+//        \App\Events\ArticlesEvent::class => [
+//          \App\Listeners\ArticlesEventListener::class,
+//        ],
+
+        \Illuminate\Auth\Events\Login::class => [
+          \App\Listeners\UserEventListner::class,
         ],
+
     ];
 
     /**
@@ -29,6 +39,10 @@ class EventServiceProvider extends ServiceProvider
     {
         parent::boot();
 
-        //
+//        \Event::listen(
+//            \App\Events\ArticleCreated::class,
+//            \App\Listeners\ArticlesEventListener::class
+//        );
+
     }
 }

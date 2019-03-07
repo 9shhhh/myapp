@@ -37,6 +37,8 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    protected $dates = ['last_login'];
+
     public function articles()
     {
         return $this->hasMany(Article::class);

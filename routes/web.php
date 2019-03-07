@@ -52,16 +52,15 @@
 //   return view('welcome', ['items'=>$items]);
 //});
 
-//Route::get('/', function () {
-//    return view('welcome');
-//});
+Route::get('/', function () {
+    return view('auth/login');
+});
 
 //Route::get('/', 'WelcomeController@index');
 
 //Route::resource('articles', 'ArticlesController');
 
-//Route::get('/', 'WelcomeController@index');
-//
+////
 //Route::get('auth/login', function (){
 //    $credentials = [
 //        'email' => 'john@example.com',
@@ -88,10 +87,15 @@
 //});
 Auth::routes();
 //
-//Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/home', 'HomeController@index')->name('home');
 
 Route::resource('articles', 'ArticlesController');
 
 //DB::listen(function ($query){
 //   var_dump($query->sql);
+//});
+
+//Event::listen('article.created',function ($article){
+//    var_dump('이벤트를 받았습니다. 받은 데이터(상태)는 다음과 같습니다.');
+//    var_dump($article->toArray());
 //});

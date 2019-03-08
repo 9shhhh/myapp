@@ -99,24 +99,24 @@ Route::resource('articles', 'ArticlesController');
 //    var_dump('이벤트를 받았습니다. 받은 데이터(상태)는 다음과 같습니다.');
 //    var_dump($article->toArray());
 //});
-Route::get('markdown',function (){
-    $text =<<<EOT
-    #마크 다운 예제 1 
-    
-    이 문서는 [마크다운][1]으로 썼습니다. 화면에는 HTML로 변환 되어 출력됩니다.
-    
-    ## 순서 없는 목록
-    
-    - 첫 번째 항목
-    - 두 번째 항목[^1]
-    
-    [1]: http://daringfireball.net/pojects/markdown
-    
-    [^1]: 두번째 항목_ http://google.com
-EOT;
-
-    return app(ParsedownExtra::class)->text($text);
-});
+//Route::get('markdown',function (){
+//    $text =<<<EOT
+//    #마크 다운 예제 1
+//
+//    이 문서는 [마크다운][1]으로 썼습니다. 화면에는 HTML로 변환 되어 출력됩니다.
+//
+//    ## 순서 없는 목록
+//
+//    - 첫 번째 항목
+//    - 두 번째 항목[^1]
+//
+//    [1]: http://daringfireball.net/pojects/markdown
+//
+//    [^1]: 두번째 항목_ http://google.com
+//EOT;
+//
+//    return app(ParsedownExtra::class)->text($text);
+//});
 
 //Route::get('docs/{file?}',function ($file = null){
 //    $text = (new App\Documentation)->get($file);
@@ -124,4 +124,7 @@ EOT;
 //    return app(ParsedownExtra::class)->text($text);
 //});
 
-Route::get('docs/{file?}','DocsController@show');
+/* Markdown Viewer */
+Route::get('docs/{file?}', 'DocsController@show');
+Route::get('docs/images/{image}', 'DocsController@image')
+    ->where('image', '[\pL-\pN\._-]+-img-[0-9]{2}.png');

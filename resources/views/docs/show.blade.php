@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-    <div>
-        <header class="container">
+    <div class="container">
+        <header class="page-header">
             <h2>마크다운 뷰어</h2>
         </header>
 
@@ -15,7 +15,7 @@
 
             <div class="col-md-9 docs_content">
                 <article>
-                    {{$content}}
+                    {!! $content !!}
                 </article>
             </div>
         </div>

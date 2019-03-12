@@ -230,7 +230,7 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'image' => Intervention\Image\Facades\Image::class,
-        'flash' => Laracasts\Flash\Flash::class,
+        'Flash' => Laracasts\Flash\Flash::class,
     ],
 
 ];

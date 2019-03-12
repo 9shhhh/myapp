@@ -39,8 +39,14 @@ class User extends Authenticatable
 
     protected $dates = ['last_login'];
 
+
     public function articles()
     {
         return $this->hasMany(Article::class);
+    }
+
+    public function scopeSocialUser($query, $email)
+    {
+        return $query->whereEmail($email)->whererNull("password");
     }
 }

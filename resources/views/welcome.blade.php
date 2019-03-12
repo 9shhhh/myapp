@@ -5,17 +5,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Laravel</title>
+    <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap-theme.css" rel="stylesheet">
 
     <!-- Styles -->
     <style>
         html, body {
             background-color: #fff;
             color: #636b6f;
-            font-family: 'Raleway';
+            font-family: 'Raleway', sans-serif;
             font-weight: 100;
             height: 100vh;
             margin: 0;
@@ -42,13 +43,17 @@
         .title {
             font-size: 84px;
         }
-        .links > a {
+        .title a,
+        .links > a
+        {
             color: #636b6f;
+            text-decoration: none;
+        }
+        .links > a {
             padding: 0 25px;
             font-size: 12px;
             font-weight: 600;
             letter-spacing: .1rem;
-            text-decoration: none;
             text-transform: uppercase;
         }
         .m-b-md {
@@ -57,17 +62,14 @@
     </style>
 </head>
 <body>
-<div class="flex-center position-ref full-height">
-    @if (Route::has('login'))
-        <div class="top-right links">
-            <a href="{{ url('/login') }}">Login</a>
-            <a href="{{ url('/register') }}">Register</a>
-        </div>
-    @endif
+<div class="flex-center full-height">
+    @include('flash::message')
 
     <div class="content">
         <div class="title m-b-md">
-            Laravel
+            <a href="route('home')">
+                {{ config('app.name', 'Laravel') }}
+            </a>
         </div>
 
         <div class="links">

@@ -8,6 +8,10 @@ Route::get('/home', [
     'uses' => 'HomeController@index',
 ]);
 Route::resource('articles', 'ArticlesController');
+Route::get('tags/{slug}/articles', [
+    'as' => 'tags.articles.index',
+    'uses' => 'ArticlesController@index',
+]);
 /* Markdown Viewer */
 Route::get('docs/{file?}', 'DocsController@show');
 Route::get('docs/images/{image}', 'DocsController@image')

@@ -18,16 +18,12 @@ class ArticlesController extends Controller
         $this->middleware('auth',['except'=>['index','show']]);
     }
 
-    public function index()
-    {
-        //
-//        return __METHOD__.'은(는)Article 컬렉션을 조회합니다.';
-          $articles = \App\Article::latest()->paginate(3);
-//          dd(view('articles.index',compact('articles'))->render());
-//        $articles->load('user');
-
-        return view('articles.index',compact('articles'));
+    public function index($slug = null) {
+        $query = $slug ? \App\Tag::whereSlug($slug)->firstOrFail()->articles() : new \App\Article;
+        $articles = $query->latest()->paginate(3);
+        return view('articles.index', compact('articles'));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -48,13 +44,13 @@ class ArticlesController extends Controller
      */
     public function store(ArticlesRequest $request)
     {
-//        $article = \App\User::find(1)->articles()->create($request->all());
         $article = $request->user()->articles()->create($request->all());
 
         if (! $article) {
             flash()->error('작성하신 글을 저장하지 못했습니다.');
             return back()->withInput();
         }
+        $article->tags()->sync($request->input('tags'));
         event(new \App\Events\ArticlesEvent($article));
         flash()->success('작성하신 글이 저장되었습니다.');
         return redirect(route('articles.index'));
@@ -100,6 +96,8 @@ class ArticlesController extends Controller
      */
     public function update(Request $request, \App\Article $article)
     {
+        $article->update($request->all());
+        $article->tags()->sync($request->input('tags'));
         $this->authorize('update', $article);
         $article->update($request->all());
 

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+    @php $viewName = 'articles.show'; @endphp
     <div class="page-header">
         <h4>
             <a href="{{ route('articles.index') }}">
@@ -14,8 +15,8 @@
 
     <article data-id="{{ $article->id }}">
         @include('articles.partial.article', compact('article'))
-
         <p>{!! markdown($article->content) !!}</p>
+        @include('tags.partial.list', ['tags'=>$articles->tags])
     </article>
 
     <div class="text-center action__article">

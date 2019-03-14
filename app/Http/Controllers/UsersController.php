@@ -18,13 +18,21 @@ class UsersController extends Controller
 
     public function store(Request $request){
 
-        //$socialUser = \App\User::whereEmail($request->input('email'))->whereNull('password')->first();
-
-        if($socialUser = \App\User::scopeSocialUser($request->get('email'))->first()){
-            return $this->updateSocialAccount($request, $socialUser);
-        }
-
-        return $this->createNativeAccount($request);
+        $this->validate($request, [
+            'name' => 'required|max:255',
+            'email' => 'required|email|max:255|unique:users',
+            'password' => 'required|confirmed|min:6',
+        ]);
+        $confirmCode = str_random(60);
+        $user = App\User::create([
+            'name' => $request->input('name'),
+            'email' => $request->input('email'),
+            'password' => bcrypt($request->input('password')),
+            'confirm_code' => $confirmCode,
+        ]);
+        return $this->respondCreated(
+            '가입하신 메일 계정으로 가입 확인 메일을 보내드렸습니다. 가입 확인하시고 로그인해 주세요.'
+        );
 
     }
 

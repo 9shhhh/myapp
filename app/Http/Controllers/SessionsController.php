@@ -33,26 +33,19 @@ class SessionsController extends Controller
             'password' => 'required|min:6',
         ]);
         if (! auth()->attempt($request->only('email', 'password'), $request->has('remember'))) {
-            if (\App\User::socialUser($request->input('email'))->first()) {
-                return $this->respondError('소셜 로그인으로 로그인해주세요.');
-            }
             return $this->respondError('이메일 또는 비밀번호가 맞지 않습니다.');
         }
         if (! auth()->user()->activated) {
             auth()->logout();
             return $this->respondError('가입확인해 주세요.');
         }
-        if (\App\User::socialUser($request->input('email'))->first()) {
-            return $this->respondError('소셜 로그인으로 로그인해주세요.');
-        }
-        return $this->respondCreated(
-            auth()->user()->name . '님, 환영합니다.'
-        );
+        return $this->respondCreated(auth()->user()->name . '님, 환영합니다.');
     }
+
     /**
      * Log the user out of the application.
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirectorhttps://github.com/appkr/l5code/tree/3026-tag/app/Http
      */
     public function destroy()
     {

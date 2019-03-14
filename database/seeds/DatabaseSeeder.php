@@ -46,5 +46,29 @@ class DatabaseSeeder extends Seeder
         if (! $sqlite) {
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
         }
+
+
+        \App\Attachment::truncate();
+        // public/files 디렉터리가 없으면 만들고, 있으면 저장된 파일을 모두 지운다.
+        if(! File::isDirectory(attachments_path())){
+            File::makeDirectory(attachments_path(),755, true);
+        }
+        File::cleanDirectory(attachments_path());
+        // 시간이 걸리는 것을 시각적으로 표현
+        $this->command->error('Downloading images from lorepixel. It takes time...');
+
+        $articles->each(function ($article) use ($faker){
+           $path = $faker->image(attachments_path());
+           $filename = File::basename($path);
+           $bytes = File::size($path);
+           $mime = File::mimeType($path);
+           $this->command->warn("File saved: {$filename}");
+
+           $article->attachments()->save(
+             factory(App\Attachment::class)->make(compact('filename','bytes','mime'))
+           );
+        });
+
+        $this->command->info('Seeded: attachments table and files');
     }
 }

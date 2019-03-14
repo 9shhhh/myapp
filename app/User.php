@@ -45,9 +45,9 @@ class User extends Authenticatable
         return $this->hasMany(Article::class);
     }
 
-    public function scopeSocialUser($query, $email)
+    public function scopeSocialUser(\Illuminate\Database\Eloquent\Builder $query, $email)
     {
-        return $query->whereEmail($email)->whererNull("password");
+        return $query->whereEmail($email)->whererNull("password")->whereActivated(1);
     }
 
     public function isAdmin()

@@ -5,7 +5,10 @@
 @import 'variables';
 
 // Bootstrap
-@import 'node_modules/bootstrap/scss/bootstrap.scss';
+//@import 'node_modules/bootstrap/scss/bootstrap.scss';
+
+// dropzone
+@import '../../../node_modules/dropzone';
 
 
 // Alert, Flash Messages

@@ -8,6 +8,7 @@ Route::get('/home', [
     'uses' => 'HomeController@index',
 ]);
 Route::resource('articles', 'ArticlesController');
+
 Route::get('tags/{slug}/articles', [
     'as' => 'tags.articles.index',
     'uses' => 'ArticlesController@index',
@@ -64,3 +65,6 @@ Route::post('auth/reset', [
     'as' => 'reset.store',
     'uses' => 'PasswordsController@postReset',
 ]);
+// 드롭존 파일 요청 라우트
+Route::resource('attachments','AttachmentsController',['only'=>['store','destroy']]);
+Route::get('attachments/{file}', 'AttachmentsController@show');

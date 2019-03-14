@@ -16,7 +16,7 @@
     <article data-id="{{ $article->id }}">
         @include('articles.partial.article', compact('article'))
         <p>{!! markdown($article->content) !!}</p>
-        @include('tags.partial.list', ['tags'=>$articles->tags])
+        @include('tags.partial.list', ['tags'=>$article->tags])
     </article>
 
     <div class="text-center action__article">

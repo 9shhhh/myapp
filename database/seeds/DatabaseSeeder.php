@@ -48,27 +48,59 @@ class DatabaseSeeder extends Seeder
         }
 
 
-        \App\Attachment::truncate();
-        // public/files 디렉터리가 없으면 만들고, 있으면 저장된 파일을 모두 지운다.
-        if(! File::isDirectory(attachments_path())){
-            File::makeDirectory(attachments_path(),755, true);
-        }
-        File::cleanDirectory(attachments_path());
-        // 시간이 걸리는 것을 시각적으로 표현
-        $this->command->error('Downloading images from lorepixel. It takes time...');
+//        \App\Attachment::truncate();
+//        // public/files 디렉터리가 없으면 만들고, 있으면 저장된 파일을 모두 지운다.
+//        if(! File::isDirectory(attachments_path())){
+//            File::makeDirectory(attachments_path(),755, true);
+//        }
+//        File::cleanDirectory(attachments_path());
+//        // 시간이 걸리는 것을 시각적으로 표현
+//        $this->command->error('Downloading images from lorepixel. It takes time...');
+//
+//        $articles->each(function ($article) use ($faker){
+//           $path = $faker->image(attachments_path());
+//           $filename = File::basename($path);
+//           $bytes = File::size($path);
+//           $mime = File::mimeType($path);
+//           $this->command->warn("File saved: {$filename}");
+//
+//           $article->attachments()->save(
+//             factory(App\Attachment::class)->make(compact('filename','bytes','mime'))
+//           );
+//        });
+//
+//        $this->command->info('Seeded: attachments table and files');
 
-        $articles->each(function ($article) use ($faker){
-           $path = $faker->image(attachments_path());
-           $filename = File::basename($path);
-           $bytes = File::size($path);
-           $mime = File::mimeType($path);
-           $this->command->warn("File saved: {$filename}");
 
-           $article->attachments()->save(
-             factory(App\Attachment::class)->make(compact('filename','bytes','mime'))
-           );
+        // 최상위 댓글
+        $articles->each(function ($article){
+            $article->comments()->save(factory(App\Comment::class)->make());
+            $article->comments()->save(factory(App\Comment::class)->make());
         });
 
-        $this->command->info('Seeded: attachments table and files');
+        // 자식 댓글
+        $articles->each(function ($article) use ($faker){
+           $commentIds = App\Comment::pluck('id')->toArray();
+
+           foreach(range(1,5) as $index){
+               $article->comments()->save(factory(App\Comment::class)->make([
+                   'parent_id' => $faker->randomElement($commentIds),
+               ]));
+            }
+        });
+
+        $this->command->info('Seeded: comments table');
+
+        // 투표
+        $comments = App\Comment::all();
+
+        $comments->each(function ($comment){
+            $comment->votes()->save(factory(App\Vote::class)->make());
+            $comment->votes()->save(factory(App\Vote::class)->make());
+            $comment->votes()->save(factory(App\Vote::class)->make());
+        });
+
+        $this->command->info('Seeded: votes table');
+
     }
 }

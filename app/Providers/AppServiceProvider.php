@@ -30,8 +30,10 @@ class AppServiceProvider extends ServiceProvider
             $allTags = \Cache::rememberForever('tags.list',function (){
                return \App\Tag::all();
             });
+            // 현재 사용자
+            $currentUser = auth()->user();
 
-            $view->with(compact('allTags'));
+            $view->with(compact('allTags','currentUser'));
         });
     }
 }

@@ -68,3 +68,13 @@ Route::post('auth/reset', [
 // 드롭존 파일 요청 라우트
 Route::resource('attachments','AttachmentsController',['only'=>['store','destroy']]);
 Route::get('attachments/{file}', 'AttachmentsController@show');
+
+// 댓글작성
+Route::resource('comments','CommentsController',['only'=>['update','destroy']]);
+Route::resource('articles.comments','CommentsController',['only'=>'store']);
+
+// 투표 기능
+Route::post('comments/{comment}/votes',[
+    'as'=> 'comments.vote',
+    'uses' => 'CommentsController@vote',
+]);

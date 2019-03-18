@@ -13,11 +13,13 @@
         </h4>
     </div>
 
-    <article data-id="{{ $article->id }}">
-        @include('articles.partial.article', compact('article'))
-        <p>{!! markdown($article->content) !!}</p>
-        @include('tags.partial.list', ['tags'=>$article->tags])
-    </article>
+    <div class="col-md-9">
+        <article data-id="{{ $article->id }}">
+            @include('articles.partial.article', compact('article'))
+            <p>{!! markdown($article->content) !!}</p>
+            @include('tags.partial.list', ['tags'=>$article->tags])
+        </article>
+    </div>
 
     <div class="text-center action__article">
         @can('update', $article)
@@ -37,13 +39,14 @@
             글 목록
         </a>
     </div>
+
+    <div class="container__comment">
+        @include('comments.index')
+    </div>
 @stop
 
 @section('script')
     <script>
-        $.ajaxSetup({ headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
-        });
         $('.button__delete').on('click', function (e) {
             var articleId = $('article').data('id');
             if (confirm('글을 삭제합니다.')) {

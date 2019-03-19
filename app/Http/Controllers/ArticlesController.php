@@ -6,17 +6,36 @@ use Illuminate\Http\Request;
 use App\Http\Requests\ArticlesRequest;
 use Illuminate\Support\Facades\DB;
 
-class ArticlesController extends Controller
+class ArticlesController extends Controller implements Cacheable
 {
 
     public function __construct()
     {
+        parent::__construct();
         $this->middleware('auth',['except'=>['index','show']]);
     }
 
-    public function index($slug = null) {
-        $query = $slug ? \App\Tag::whereSlug($slug)->firstOrFail()->articles() : new \App\Article;
-        $articles = $query->latest()->paginate(3);
+    public function cacheTags()
+    {
+        return 'articles';
+    }
+
+    public function index($slug = null,Request $request) {
+        $cachekey = cache_key('articles.index');
+
+                $query = $slug ? \App\Tag::whereSlug($slug)->firstOrFail()->articles() : new \App\Article;
+        $query = $query->orderBy(
+          $request->input('sort','created_at'),
+          $request->input('order','desc')
+        );
+        if($keyword = request()->input('q')){
+            $raw = 'MATCH(title,content) AGAINST(? IN BOOLEAN MODE)';
+            $query = $query->whereRaw($raw,[$keyword]);
+        }
+//        $articles = $query->latest()->paginate(3);
+        // 캐싱
+        $articles = $this->cache($cachekey, 5, $query, 'paginate', 3);
+
         return view('articles.index', compact('articles'));
     }
 
@@ -28,41 +47,32 @@ class ArticlesController extends Controller
 
     public function store(ArticlesRequest $request)
     {
-        $article = $request->user()->articles()->create($request->all());
+        // 이메일 전송 여부 확인
+        $payload = array_merge($request->all(),[
+           'notification'=>$request->has('notification'),
+        ]);
+
+        $article = $request->user()->articles()->create($payload);
 
         if (! $article) {
             flash()->error('작성하신 글을 저장하지 못했습니다.');
             return back()->withInput();
         }
-
+        // 태그 싱크
         $article->tags()->sync($request->input('tags'));
 
-
-//        if ($request->hasFile('files')) {
-//            $files = $request->file('files');
-//
-//            foreach ($files as $file) {
-//                $filename = str_random().filter_var($file->getClientOriginalName(),FILTER_SANITIZE_URL);
-//
-//                $article->attachments()->create([
-//                    'filename' => $filename,
-//                    'bytes' => $file->getSize(),
-//                    'mime' => $file->getClientMimeType()
-//                ]);
-//
-//                $file->move(attachments_path(), $filename);
-//            }
-//        }
-
-
         event(new \App\Events\ArticlesEvent($article));
+        event(new \App\Events\ModelChanged(['articles']));
         flash()->success('작성하신 글이 저장되었습니다.');
         return redirect(route('articles.index'));
     }
 
     public function show(\App\Article $article)
     {
-        $comments = $article->comments()->with('replies')->whereNull('parent_id')->latest()->get();
+        $article->view_count += 1;
+        $article->save();
+        $comments = $article->comments()->with('replies')->withTrashed()->
+        whereNull('parent_id')->latest()->get();
         return view('articles.show',compact('article','comments'));
     }
 

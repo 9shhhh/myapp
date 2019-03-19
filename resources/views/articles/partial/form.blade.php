@@ -32,6 +32,14 @@
     <label for="my-dropzone">파일</label>
     <div id="my-dropzone" class="dropzone"></div>
 </div>
+<div class="form-group">
+    <div class="checkbox">
+        <label>
+            <input type="checkbox" name="notification" value="{{old('notification',1)}}" checked>
+            댓글이 작성되면 이메일 알림 받기
+        </label>
+    </div>
+</div>
 @section('script')
     @parent
     {{--<script>--}}

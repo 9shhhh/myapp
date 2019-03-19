@@ -29,11 +29,14 @@ class CommentsController extends Controller
     public function store(CommentRequest $request, \App\Article $article)
     {
         $comment = $article->comments()->create(array_merge(
-           $request->all(),['user_id'=>$request->user()->id]
+            $request->all(),
+            ['user_id' => $request->user()->id]
         ));
-
+        event(new \App\Events\CommentsEvent($comment));
         flash()->success('작성하신 댓글을 저장했습니다.');
-        return redirect(route('articles.show',$article->id).'#comment_'.$comment->id);
+        return redirect(
+            route('articles.show', $article->id) . '#comment_' . $comment->id
+        );
     }
     // 댓글 수정
     public function update(CommentRequest $request, \App\Comment $comment)
@@ -46,7 +49,13 @@ class CommentsController extends Controller
     // 댓글 삭제
     public function destory(\App\Comment $comment)
     {
-        $comment->delete();
+        // 자식댓글 존재로 소프트 삭제
+        if($comment->replies->count() > 0){
+            $comment->delete();
+        } else { // 자식댓글 없으므로, 완전삭제
+            $comment->votes()->delete();
+            $comment->forceDelete();
+        }
 
         return response()->json([],204);
     }

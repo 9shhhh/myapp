@@ -24,10 +24,17 @@ class EventServiceProvider extends ServiceProvider
 //          \App\Listeners\ArticlesEventListener::class,
 //        ],
 
-        \Illuminate\Auth\Events\Login::class => [
-          \App\Listeners\UserEventListner::class,
-        ],
+//        \Illuminate\Auth\Events\Login::class => [
+//          \App\Listeners\UserEventListner::class,
+//        ],
 
+//        \App\Events\CommentsEvent::class => [
+//          \App\Listeners\CommentsEventListener::class,
+//        ],
+
+        \App\Events\ModelChanged::class =>[
+            \App\Listeners\CacheHandler::class,
+        ],
     ];
 
     protected $subscribe=[

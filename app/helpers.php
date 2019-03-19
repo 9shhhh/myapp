@@ -46,3 +46,36 @@ function format_filesize($bytes)
 
     return round($bytes, 2) . $suffix[$step];
 }
+
+//정렬 조건에 맞는 페이지로 이동
+function link_for_sort($column, $text, $params = [])
+{
+    $direction = request()->input('order');
+    $reverse = ($direction == 'asc') ? 'desc' : 'asc';
+
+    if (request()->input('sort') == $column){
+        $text = sprintf("%s %s", $direction == 'asc'
+            ? '<i class="fa fa-sort-alpha-asc"></i>'
+            : '<i class="fa fa-sort-alpha-desc"></i>',$text);
+    }
+
+    $queryString = http_build_query(array_merge(
+       request()->except(['sort','order']),
+       ['sort'=>$column, 'order'=>$reverse],$params
+    ));
+
+    return sprintf('<a href="%s?%s">%s</a>',urldecode(request()->url()),
+        $queryString,$text);
+}
+//캐시키 발급
+function cache_key($base)
+{
+    $key = ($uri=request()->getQueryString()) ? $base. '.' .urlencode($uri) : $base;
+
+    return md5($key);
+}
+// 캐시 태그
+function taggable()
+{
+    return in_array(config('cache.default'),['memcached','redis'],true);
+}

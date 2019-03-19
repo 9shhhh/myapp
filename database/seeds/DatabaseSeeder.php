@@ -73,34 +73,49 @@ class DatabaseSeeder extends Seeder
 
 
         // 최상위 댓글
-        $articles->each(function ($article){
-            $article->comments()->save(factory(App\Comment::class)->make());
-            $article->comments()->save(factory(App\Comment::class)->make());
-        });
+//        $articles->each(function ($article){
+//            $article->comments()->save(factory(App\Comment::class)->make());
+//            $article->comments()->save(factory(App\Comment::class)->make());
+//        });
+//
+//        // 자식 댓글
+//        $articles->each(function ($article) use ($faker){
+//           $commentIds = App\Comment::pluck('id')->toArray();
+//
+//           foreach(range(1,5) as $index){
+//               $article->comments()->save(factory(App\Comment::class)->make([
+//                   'parent_id' => $faker->randomElement($commentIds),
+//               ]));
+//            }
+//        });
+//
+//        $this->command->info('Seeded: comments table');
+//
+//        // 투표
+//        $comments = App\Comment::all();
+//
+//        $comments->each(function ($comment){
+//            $comment->votes()->save(factory(App\Vote::class)->make());
+//            $comment->votes()->save(factory(App\Vote::class)->make());
+//            $comment->votes()->save(factory(App\Vote::class)->make());
+//        });
+//
+//        $this->command->info('Seeded: votes table');
 
-        // 자식 댓글
-        $articles->each(function ($article) use ($faker){
-           $commentIds = App\Comment::pluck('id')->toArray();
+        foreach (range(1,10) as $index){
+            $path = $faker->image(attachments_path());
+            $filename = File::basename($path);
+            $bytes = File::size($path);
+            $mime = File::mimeType($path);
+            $this->command->warn("File saved: {$filename}");
 
-           foreach(range(1,5) as $index){
-               $article->comments()->save(factory(App\Comment::class)->make([
-                   'parent_id' => $faker->randomElement($commentIds),
-               ]));
-            }
-        });
-
-        $this->command->info('Seeded: comments table');
-
-        // 투표
-        $comments = App\Comment::all();
-
-        $comments->each(function ($comment){
-            $comment->votes()->save(factory(App\Vote::class)->make());
-            $comment->votes()->save(factory(App\Vote::class)->make());
-            $comment->votes()->save(factory(App\Vote::class)->make());
-        });
-
-        $this->command->info('Seeded: votes table');
+            factory(App\Attachment::class)->create([
+               'filename'=>$filename,
+               'bytes' => $bytes,
+               'mime' => $mime,
+               'created_at' => $faker->dateTimeBetween('-1 month'),
+            ]);
+        }
 
     }
 }

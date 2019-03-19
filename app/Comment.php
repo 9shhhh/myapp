@@ -4,13 +4,37 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
+/***********************************************************
+
+ * @params
+
+ * @description 댓글 달기
+
+ * @method
+
+ * @return
+
+ ***********************************************************/
+
 class Comment extends Model
 {
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+
     protected $fillable = ['commentable_type','commentable_id','user_id','parent_id','content',];
 
     protected $with = ['user','votes',];
 
     protected $appends = ['up_count','down_count',];
+
+    protected $hidden = [
+        'user_id',
+        'commentable_type',
+        'commentable_id',
+        'parent_id',
+        'deleted_at',
+    ];
+
+    protected  $dates = ['delete_at'];
 
     // User 조회
     public function user()
@@ -30,7 +54,7 @@ class Comment extends Model
     // 부모의 댓글 인스턴스를 조회
     public function parent()
     {
-        return $this->belongsTo(Comment::class,'parent_id',id);
+        return $this->belongsTo(Comment::class,'parent_id','id');
     }
     // 투표
     public function votes()

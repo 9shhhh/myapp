@@ -179,7 +179,7 @@ return [
 
 //        Barryvdh\Debugbar\ServiceProvider::class ,
         Intervention\Image\ImageServiceProvider::class,
-
+        \Maknz\Slack\SlackServiceProviderLaravel5::class,
     ],
 
     /*
@@ -233,6 +233,7 @@ return [
         'image' => Intervention\Image\Facades\Image::class,
         'Flash' => Laracasts\Flash\Flash::class,
         'Socialite' => Laravel\Socialite\Facades\Socialite::class,
+        'Slack' => Maknz\Slack\Facades\Slack::class,
     ],
 
 ];

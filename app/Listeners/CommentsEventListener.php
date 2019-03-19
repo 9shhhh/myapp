@@ -19,10 +19,9 @@ class CommentsEventListener
         if (! $to) {
             return;
         }
-        \Mail::send(
-            'emails.comments.created',
-            compact('comment'),
-            function ($message) use($to) {
+        $view = 'emails.'.app()->getLocale().'comments.created';
+
+        \Mail::send($view, compact('comment'), function ($message) use($to) {
                 $message->to($to);
                 $message->subject(
                     sprintf(

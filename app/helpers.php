@@ -79,3 +79,29 @@ function taggable()
 {
     return in_array(config('cache.default'),['memcached','redis'],true);
 }
+// 쿼리스트링 재 생산
+function current_url()
+{
+    if(! request()->has('return')){
+        return request()->fullUrl();
+    }
+
+    return sprintf(
+      '%s?%s',
+      request()->url(),
+      http_build_query(request()->except('return'))
+    );
+}
+//테이블 열과줄 교체
+function array_transpose(array $data)
+{
+    $res = [];
+
+    foreach ($data as $row => $columns){
+        foreach ($columns as $row2 => $column2){
+            $res[$row2][$row] = $column2;
+        }
+    }
+
+    return $res;
+}

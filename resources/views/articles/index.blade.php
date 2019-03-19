@@ -6,10 +6,10 @@
     <div class="page-header">
         <h4>
             <a href="{{ route('articles.index') }}">
-                포럼
+                {{trans('forum.title')}}
             </a>
             <small>
-                / 글 목록
+                / {{trans('forum.articles.index')}}
             </small>
         </h4>
     </div>

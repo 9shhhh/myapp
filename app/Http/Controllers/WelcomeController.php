@@ -10,4 +10,16 @@ class WelcomeController extends Controller
     {
         return view('welcome');
     }
+
+    public function locale()
+    {
+        $cookie = cookie()->forever('local__myapp', request('locale'));
+
+        cookie()->queue($cookie);
+
+        return ($return = request('return'))
+            ? redirect(urldecode($return))->withCookie($cookie)
+            : redirect('/')->withCookie($cookie);
+
+    }
 }

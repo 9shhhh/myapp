@@ -16,7 +16,8 @@
         "laracasts/flash": " 2.0.*",
         "laravel/framework": "5.8.*",
         "laravel/socialite": "2.0.*",
-        "laravel/tinker": "^1.0"
+        "laravel/tinker": "^1.0",
+        "maknz/slack": "^1.7"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.2",

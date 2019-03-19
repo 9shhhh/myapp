@@ -1,8 +1,9 @@
 <h1>
-    {{$comment->commentable->title}}
-    <small>{{$comment->user->name}}님이 작성하신 댓글입니다.</small>
+    {{ $comment->commentable->title }}
+    <small>
+        by {{ $comment->user->name }}
+    </small>
 </h1>
-<hr/>
 <p>
     {!! markdown($comment->content) !!}
     <smail>{{$comment->created_at}}</smail>

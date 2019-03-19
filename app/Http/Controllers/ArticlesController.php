@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests\ArticlesRequest;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ArticlesController extends Controller implements Cacheable
 {
@@ -20,23 +21,29 @@ class ArticlesController extends Controller implements Cacheable
         return 'articles';
     }
 
-    public function index($slug = null,Request $request) {
+    public function index(Request $request,$slug=null) {
         $cachekey = cache_key('articles.index');
 
-                $query = $slug ? \App\Tag::whereSlug($slug)->firstOrFail()->articles() : new \App\Article;
+        $query = $slug ? \App\Tag::whereSlug($slug)->firstOrFail()->articles() : new \App\Article;
+
         $query = $query->orderBy(
           $request->input('sort','created_at'),
           $request->input('order','desc')
         );
+
         if($keyword = request()->input('q')){
             $raw = 'MATCH(title,content) AGAINST(? IN BOOLEAN MODE)';
             $query = $query->whereRaw($raw,[$keyword]);
         }
-//        $articles = $query->latest()->paginate(3);
-        // 캐싱
+
         $articles = $this->cache($cachekey, 5, $query, 'paginate', 3);
 
-        return view('articles.index', compact('articles'));
+        return $this->respondCollection($articles);
+    }
+
+    protected function respondCollection(LengthAwarePaginator $articles)
+    {
+        return view('articles.index',compact('articles'));
     }
 
     public function create()
@@ -52,7 +59,8 @@ class ArticlesController extends Controller implements Cacheable
            'notification'=>$request->has('notification'),
         ]);
 
-        $article = $request->user()->articles()->create($payload);
+//        $article = $request->user()->articles()->create($payload);
+        $article = \App\User::find(1)->articles()->create($payload);
 
         if (! $article) {
             flash()->error('작성하신 글을 저장하지 못했습니다.');
@@ -63,8 +71,17 @@ class ArticlesController extends Controller implements Cacheable
 
         event(new \App\Events\ArticlesEvent($article));
         event(new \App\Events\ModelChanged(['articles']));
+//        flash()->success('작성하신 글이 저장되었습니다.');
+//        return redirect(route('articles.index'));
+
+        return $this->respondCreated($article);
+    }
+
+    protected  function respondCreated(\App\Article $article)
+    {
         flash()->success('작성하신 글이 저장되었습니다.');
-        return redirect(route('articles.index'));
+
+        return redirect(route('articles.show',$article->id));
     }
 
     public function show(\App\Article $article)

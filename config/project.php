@@ -30,4 +30,5 @@ return [
       'ko'=>'한국어',
       'en'=>'English',
     ],
+    'api_domain' => env("API_DOMAIN",'apiDev'),
 ];

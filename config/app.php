@@ -180,6 +180,7 @@ return [
 //        Barryvdh\Debugbar\ServiceProvider::class ,
         Intervention\Image\ImageServiceProvider::class,
         \Maknz\Slack\SlackServiceProviderLaravel5::class,
+        Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
     ],
 
     /*
@@ -234,6 +235,8 @@ return [
         'Flash' => Laracasts\Flash\Flash::class,
         'Socialite' => Laravel\Socialite\Facades\Socialite::class,
         'Slack' => Maknz\Slack\Facades\Slack::class,
+        'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
+        'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
     ],
 
 ];

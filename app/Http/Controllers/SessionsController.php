@@ -1,7 +1,6 @@
 <?php
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-use App\Http\Requests;
 class SessionsController extends Controller
 {
     /**
@@ -28,32 +27,55 @@ class SessionsController extends Controller
      */
     public function store(Request $request)
     {
+        error_log($request);
         $this->validate($request, [
             'email' => 'required|email',
             'password' => 'required|min:6',
         ]);
-        if (! auth()->attempt($request->only('email', 'password'), $request->has('remember'))) {
-            return $this->respondError('이메일 또는 비밀번호가 맞지 않습니다.');
+        $token = is_api_domain()
+            ? jwt()->attempt($request->only('email', 'password'))
+            : auth()->attempt($request->only('email', 'password'), $request->has('remember'));
+        if (! $token) {
+            if (\App\User::socialUser($request->input('email'))->first()) {
+                return $this->respondSocialUser();
+            }
+            return $this->respondLoginFailed();
         }
         if (! auth()->user()->activated) {
             auth()->logout();
-            return $this->respondError('가입확인해 주세요.');
+            return $this->respondNotConfirmed();
         }
-        return $this->respondCreated(auth()->user()->name . '님, 환영합니다.');
+        return $this->respondCreated($token);
     }
-
     /**
      * Log the user out of the application.
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirectorhttps://github.com/appkr/l5code/tree/3026-tag/app/Http
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
     public function destroy()
     {
         auth()->logout();
-        flash('또 방문해 주세요.');
+        flash(
+            trans('auth.sessions.info_bye')
+        );
         return redirect(route('root'));
     }
-    /* Helpers */
+    /* Response Methods */
+    /**
+     * Make a success response.
+     *
+     * @param string|boolean $token
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
+    protected function respondCreated($token)
+    {
+        flash(
+            trans('auth.sessions.info_welcome', ['name' => auth()->user()->name])
+        );
+        return ($return = request('return'))
+            ? redirect(urldecode($return))
+            : redirect()->intended(route('home'));
+    }
     /**
      * Make an error response.
      *
@@ -66,14 +88,33 @@ class SessionsController extends Controller
         return back()->withInput();
     }
     /**
-     * Make a success response.
-     *
-     * @param string $message
+     * @return $this
+     */
+    protected function respondSocialUser()
+    {
+        flash()->error(
+            trans('auth.sessions.error_social_user')
+        );
+        return back()->withInput();
+    }
+    /**
+     * @return $this
+     */
+    protected function respondLoginFailed()
+    {
+        flash()->error(
+            trans('auth.sessions.error_incorrect_credentials')
+        );
+        return back()->withInput();
+    }
+    /**
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    protected function respondCreated($message)
+    protected function respondNotConfirmed()
     {
-        flash($message);
-        return redirect()->intended('home');
+        flash()->error(
+            trans('auth.sessions.error_not_confirmed')
+        );
+        return back()->withInput();
     }
 }

@@ -2,116 +2,248 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Article;
 use App\Http\Requests\ArticlesRequest;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
+use File;
 
 class ArticlesController extends Controller implements Cacheable
 {
-
+    /**
+     * ArticlesController constructor.
+     */
     public function __construct()
     {
         parent::__construct();
-        $this->middleware('auth',['except'=>['index','show']]);
+
+        $this->middleware('auth', ['except' => ['index', 'show']]);
     }
 
+    /**
+     * Specify the tags for caching.
+     *
+     * @return string
+     */
     public function cacheTags()
     {
         return 'articles';
     }
 
-    public function index(Request $request,$slug=null) {
-        $cachekey = cache_key('articles.index');
+    /**
+     * Display a listing of the resource.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string|null $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request, $slug = null) {
+        $cacheKey = cache_key('articles.index');
 
-        $query = $slug ? \App\Tag::whereSlug($slug)->firstOrFail()->articles() : new \App\Article;
+        $query = $slug
+            ? \App\Tag::whereSlug($slug)->firstOrFail()->articles()
+            : new Article;
 
         $query = $query->orderBy(
-          $request->input('sort','created_at'),
-          $request->input('order','desc')
+            $request->input('sort', 'created_at'),
+            $request->input('order', 'desc')
         );
 
-        if($keyword = request()->input('q')){
+        if ($keyword = request()->input('q')) {
             $raw = 'MATCH(title,content) AGAINST(? IN BOOLEAN MODE)';
-            $query = $query->whereRaw($raw,[$keyword]);
+            $query = $query->whereRaw($raw, [$keyword]);
         }
 
-        $articles = $this->cache($cachekey, 5, $query, 'paginate', 3);
+        $articles = $this->cache($cacheKey, 5, $query, 'paginate', 3);
 
-        return $this->respondCollection($articles);
+        return $this->respondCollection($articles, $cacheKey);
     }
 
-    protected function respondCollection(LengthAwarePaginator $articles)
-    {
-        return view('articles.index',compact('articles'));
-    }
-
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function create()
     {
-        $article = new \App\Article;
+        $article = new Article;
+
         return view('articles.create', compact('article'));
     }
 
-    public function store(ArticlesRequest $request)
-    {
-        // 이메일 전송 여부 확인
-        $payload = array_merge($request->all(),[
-           'notification'=>$request->has('notification'),
-        ]);
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param \App\Http\Requests\ArticlesRequest $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(ArticlesRequest $request) {
+        $user = $request->user();
 
-        $article = $request->user()->articles()->create($payload);
-//        $article = \App\User::find(1)->articles()->create($payload);
+        $article = $user->articles()->create(
+            $request->getPayload()
+        );
 
         if (! $article) {
-            flash()->error('작성하신 글을 저장하지 못했습니다.');
+            flash()->error(
+                trans('forum.articles.error_writing')
+            );
+
             return back()->withInput();
         }
+
         // 태그 싱크
         $article->tags()->sync($request->input('tags'));
 
+        // 첨부파일 연결
+        $request->getAttachments()->each(function ($attachment) use ($article) {
+            $attachment->article()->associate($article);
+            $attachment->save();
+        });
+
         event(new \App\Events\ArticlesEvent($article));
         event(new \App\Events\ModelChanged(['articles']));
-//        flash()->success('작성하신 글이 저장되었습니다.');
-//        return redirect(route('articles.index'));
 
         return $this->respondCreated($article);
     }
 
-    protected  function respondCreated(\App\Article $article)
+    /**
+     * Display the specified resource.
+     *
+     * @param \App\Article $article
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Article $article)
     {
-        flash()->success('작성하신 글이 저장되었습니다.');
+        if (! is_api_domain()) {
+            $article->view_count += 1;
+            $article->save();
+        }
 
-        return redirect(route('articles.show',$article->id));
+        $comments = $article->comments()
+            ->with('replies')
+            ->withTrashed()
+            ->whereNull('parent_id')
+            ->latest()->get();
+
+        return $this->respondInstance($article, $comments);
     }
 
-    public function show(\App\Article $article)
-    {
-        $article->view_count += 1;
-        $article->save();
-        $comments = $article->comments()->with('replies')->withTrashed()->
-        whereNull('parent_id')->latest()->get();
-        return view('articles.show',compact('article','comments'));
-    }
-
-    public function edit(\App\Article $article)
-    {
-        $this->authorize('update',$article);
-        return view('articles.edit',compact('article'));
-    }
-
-    public function update(Request $request, \App\Article $article)
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param \App\Article $article
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Article $article)
     {
         $this->authorize('update', $article);
-        $article->update($request->all());
+
+        return view('articles.edit', compact('article'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param \App\Http\Requests\ArticlesRequest $request
+     * @param \App\Article $article
+     * @return \Illuminate\Http\Response
+     */
+    public function update(ArticlesRequest $request, Article $article)
+    {
+        $this->authorize('update', $article);
+
+        $payload = array_merge($request->all(), [
+            'notification' => $request->has('notification'),
+        ]);
+
+        $article->update($payload);
         $article->tags()->sync($request->input('tags'));
+
+        event(new \App\Events\ModelChanged(['articles']));
+        flash()->success(
+            trans('forum.articles.success_updating')
+        );
+
+        return $this->respondUpdated($article);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param \App\Article $article
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Article $article)
+    {
+        $this->authorize('delete', $article);
+
+        $this->deleteAttachments($article->attachments);
+
+        $article->delete();
+
+        event(new \App\Events\ModelChanged(['articles']));
+
+        return response()->json([], 204, [], JSON_PRETTY_PRINT);
+    }
+
+    public function deleteAttachments(Collection $attachments)
+    {
+        $attachments->each(function ($attachment) {
+            $filePath = attachments_path($attachment->filename);
+
+            if (File::exists($filePath)) {
+                File::delete($filePath);
+            }
+
+            return $attachment->delete();
+        });
+    }
+
+    /* Response Methods */
+
+    /**
+     * @param \Illuminate\Contracts\Pagination\LengthAwarePaginator $articles
+     * @param string|null $cacheKey
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    protected function respondCollection(LengthAwarePaginator $articles, $cacheKey = null)
+    {
+        return view('articles.index', compact('articles'));
+    }
+
+    /**
+     * @param $article
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
+    protected function respondCreated($article)
+    {
+        flash()->success(
+            trans('forum.articles.success_writing')
+        );
 
         return redirect(route('articles.show', $article->id));
     }
 
-    public function destroy(Request $request, \App\Article $article)
+    /**
+     * @param \App\Article $article
+     * @param \Illuminate\Database\Eloquent\Collection $comments
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    protected function respondInstance(Article $article, Collection $comments)
     {
-        $this->authorize('delete',$article);
-        $article->delete();
-        return response()->json([],204);
+        return view('articles.show', compact('article', 'comments'));
+    }
+
+    /**
+     * @param \App\Article $article
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
+    protected function respondUpdated(Article $article)
+    {
+        flash()->success(trans('forum.articles.success_updating'));
+
+        return redirect(route('articles.show', $article->id));
     }
 }

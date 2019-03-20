@@ -2,40 +2,103 @@
 
 namespace App\Http\Controllers\Api\v1;
 
-use Illuminate\Http\Request;
+use App\Article;
+//use App\EtagTrait;
 use App\Http\Controllers\ArticlesController as ParentController;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 class ArticlesController extends ParentController
 {
-    // 부모 컨트롤러에서 auth 미들웨어를 쓰고있어서, 무효화 시키기 위해 빈 생성자 선언.
+//    use EtagTrait;
+
+    /**
+     * ArticlesController constructor.
+     */
     public function __construct()
     {
-        // 부모 컨트롤러 생성사 사용
+//        HTTP 기본 인증으로 인증을 받은 후, 부모 컨트롤러 생성자의 인증 미들웨어를 타게 되므로
+//        아래 로직은 정상적으로 작동해야 한다. 프레임워크 버그로 추정된다.
+//        $this->middleware('auth.basic.once', ['except' => ['index', 'show', 'tags']]);
+//        parent::__construct();
+
         parent::__construct();
-        // 부모컨트롤러의 auth 미들웨어 무효화
         $this->middleware = [];
-        // 새로 만든 http 무상태 기본인증 미들웨어 적용
-        $this->middleware('auth.basic.once',['except'=>['index','show','tags']]);
+        $this->middleware('jwt.auth', ['except' => ['index', 'show', 'tags']]);
     }
 
-    protected function respondCreated(\App\Article $article)
-    {
-        return response()->json(
-          ['success'=>'created'],
-          201,
-          ['Location'=>'생성한_리소스_상세보기_API_엔드포인트'],
-          JSON_PRETTY_PRINT
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection|static[]
+     */
+    public function tags() {
+        return json()->withCollection(
+            \App\Tag::all(),
+            new \App\Transformers\TagTransformer
         );
     }
 
-    protected function respondCollection(LengthAwarePaginator $articles)
+    /**
+     * @param LengthAwarePaginator $articles
+     * @param string|null $cacheKey
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function respondCollection(LengthAwarePaginator $articles, $cacheKey = null)
     {
-        return $articles->toJson(JSON_PRETTY_PRINT);
+//        $reqEtag = request()->getETags();
+//        $genEtag = $this->etags($articles, $cacheKey);
+//
+//        if (config('project.etag') and isset($reqEtag[0]) and $reqEtag[0] === $genEtag) {
+//            return json()->notModified();
+//        }
+//
+//        return json()->setHeaders(['Etag' => $genEtag])->withPagination(
+//            $articles,
+//            new \App\Transformers\ArticleTransformer
+//        );
+
+        return json()->withPagination($articles, new \App\Transformers\ArticleTransformer);
     }
 
-    public function tags()
+    /**
+     * @param \App\Article $article
+     * @param \Illuminate\Database\Eloquent\Collection $comments
+     * @return string
+     */
+    protected function respondInstance(Article $article, Collection $comments)
     {
-        return \App\Tag::all();
+//        $cacheKey = cache_key('articles.'.$article->id);
+//        $reqEtag = request()->getETags();
+//        $genEtag = $this->etag($article, $cacheKey);
+//
+//        if (config('project.etag') and isset($reqEtag[0]) and $reqEtag[0] === $genEtag) {
+//            return json()->notModified();
+//        }
+//
+//        return json()->setHeaders(['Etag' => $genEtag])->withItem(
+//            $article,
+//            new \App\Transformers\ArticleTransformer
+//        );
+
+        return json()->withItem($article, new \App\Transformers\ArticleTransformer);
+    }
+
+    /**
+     * @param $article
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function respondCreated($article)
+    {
+        return json()->setHeaders([
+            'Location' => route('api.v1.articles.show', $article->id),
+        ])->created('created');
+    }
+
+    /**
+     * @param \App\Article $article
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function respondUpdated(Article $article)
+    {
+        return json()->success('updated');
     }
 }

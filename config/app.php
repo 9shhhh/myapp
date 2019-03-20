@@ -181,10 +181,11 @@ return [
         Intervention\Image\ImageServiceProvider::class,
         \Maknz\Slack\SlackServiceProviderLaravel5::class,
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
+        Appkr\Api\ApiServiceProvider::class,
     ],
 
     /*
-    |--------------------------------------------------------------------------
+    |---------------------------------------------------------cle-----------------
     | Class Aliases
     |--------------------------------------------------------------------------
     |

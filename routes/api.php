@@ -61,17 +61,17 @@ Route::group([
     });
 });
 
-//Route::group([
-//   'domain' => config('project.api_domain'),
-//    'namespace' => 'Api',
-//    'as' => 'api.',],function (){
-//    // 토큰 교환 요청(로그인)
-//    Route::post('auth/login',[
-//       'as'=>'sessions.store',
-//       'uses'=>'SessionsController@store',
-//    ]);
-//});
-Route::post('auth/login', [
-    'as' => 'sessions.store',
-    'uses' => 'SessionsController@store',
-]);
+Route::group([
+   'domain' => config('project.api_domain'),
+    'namespace' => 'Api',
+    'as' => 'api.',],function (){
+    // 토큰 교환 요청(로그인)
+    Route::post('auth/login',[
+       'as'=>'sessions.store',
+       'uses'=>'SessionsController@store',
+    ]);
+});
+//Route::post('auth/login', [
+//    'as' => 'sessions.store',
+//    'uses' => 'SessionsController@store',
+//]);

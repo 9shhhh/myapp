@@ -31,4 +31,5 @@ return [
       'en'=>'English',
     ],
     'api_domain' => env("API_DOMAIN",'apiDev'),
+    'etag' => true,
 ];

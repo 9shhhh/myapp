@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Api\v1;
 use App\Article;
 //use App\EtagTrait;
 use App\Http\Controllers\ArticlesController as ParentController;
+use App\Http\Controllers\Cacheable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 class ArticlesController extends ParentController
 {
-//    use EtagTrait;
+    use \App\EtagTrait;
 
     /**
      * ArticlesController constructor.
@@ -44,19 +45,19 @@ class ArticlesController extends ParentController
      */
     protected function respondCollection(LengthAwarePaginator $articles, $cacheKey = null)
     {
-//        $reqEtag = request()->getETags();
-//        $genEtag = $this->etags($articles, $cacheKey);
-//
-//        if (config('project.etag') and isset($reqEtag[0]) and $reqEtag[0] === $genEtag) {
-//            return json()->notModified();
-//        }
-//
-//        return json()->setHeaders(['Etag' => $genEtag])->withPagination(
-//            $articles,
-//            new \App\Transformers\ArticleTransformer
-//        );
+        $reqEtag = request()->getETags();
+        $genEtag = $this->etags($articles, $cacheKey);
 
-        return json()->withPagination($articles, new \App\Transformers\ArticleTransformer);
+        if (config('project.etag') and isset($reqEtag[0]) and $reqEtag[0] === $genEtag) {
+            return json()->notModified();
+        }
+
+        return json()->setHeaders(['Etag' => $genEtag])->withPagination(
+            $articles,
+            new \App\Transformers\ArticleTransformer
+        );
+
+//        return json()->withPagination($articles, new \App\Transformers\ArticleTransformer);
     }
 
     /**
@@ -64,22 +65,22 @@ class ArticlesController extends ParentController
      * @param \Illuminate\Database\Eloquent\Collection $comments
      * @return string
      */
-    protected function respondInstance(Article $article, Collection $comments)
+    protected function respondInstance(Article $article, $comments)
     {
-//        $cacheKey = cache_key('articles.'.$article->id);
-//        $reqEtag = request()->getETags();
-//        $genEtag = $this->etag($article, $cacheKey);
-//
-//        if (config('project.etag') and isset($reqEtag[0]) and $reqEtag[0] === $genEtag) {
-//            return json()->notModified();
-//        }
-//
-//        return json()->setHeaders(['Etag' => $genEtag])->withItem(
-//            $article,
-//            new \App\Transformers\ArticleTransformer
-//        );
+        $cacheKey = cache_key('articles.'.$article->id);
+        $reqEtag = request()->getETags();
+        $genEtag = $this->etag($article, $cacheKey);
 
-        return json()->withItem($article, new \App\Transformers\ArticleTransformer);
+        if (config('project.etag') and isset($reqEtag[0]) and $reqEtag[0] === $genEtag) {
+            return json()->notModified();
+        }
+
+        return json()->setHeaders(['Etag' => $genEtag])->withItem(
+            $article,
+            new \App\Transformers\ArticleTransformer
+        );
+
+//        return json()->withItem($article, new \App\Transformers\ArticleTransformer);
     }
 
     /**

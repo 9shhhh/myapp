@@ -163,6 +163,8 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         Laracasts\Flash\FlashServiceProvider::class,
         Laravel\Socialite\SocialiteServiceProvider::class,
+        Barryvdh\Cors\ServiceProvider::class,
+
 
         /*
          * Package Service Providers...
@@ -238,6 +240,7 @@ return [
         'Slack' => Maknz\Slack\Facades\Slack::class,
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
+        'cors' => \Barryvdh\Cors\HandleCors::class,
     ],
 
 ];

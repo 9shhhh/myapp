@@ -20,6 +20,7 @@ Route::group([
     'domain' => config('project.api_domain'),
     'namespace' => 'Api',
     'as' => 'api.',
+    'middleware' => ['cors'],
 ], function () {
     /* api.v1 */
     Route::group([

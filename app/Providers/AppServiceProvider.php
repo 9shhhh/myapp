@@ -13,6 +13,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->singleton('optimus',function (){
+           return new \Jenssegers\Optimus\Optimus(1917404807, 2112659255, 176701398, 31);
+        });
+
         if ($this->app->environment('local')){
             $this->app->register(\Barryvdh\Debugbar\ServiceProvider::class);
         }
